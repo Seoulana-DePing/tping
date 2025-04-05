@@ -13,7 +13,12 @@ void main() {
         ProxyProvider<LocationService, NetworkService>(
           update:
               (_, location, __) => NetworkService(
-                strategy: PollingStrategy(baseUrl: AppConstants.baseUrl),
+                strategy: PollingStrategy(
+                    baseUrl: AppConstants.baseUrl,
+                    baseEndpoint: AppConstants.pingEndpoint,
+                    pollingInterval: AppConstants.pingInterval,
+                    pollingEndpoint: AppConstants.pollingEndpoint
+                ),
                 locationService: location,
               ),
         ),

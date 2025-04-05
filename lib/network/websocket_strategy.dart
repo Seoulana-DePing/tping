@@ -9,6 +9,9 @@ class WebSocketStrategy implements ConnectionStrategy {
   WebSocketStrategy({required this.wsUrl});
 
   @override
+  void Function(String ip)? onIpReceived;
+
+  @override
   Future<void> initialize() async {
     _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
   }
@@ -49,6 +52,12 @@ class WebSocketStrategy implements ConnectionStrategy {
   @override
   getPublicIpAddress() {
     // TODO: implement getPublicIpAddress
+    throw UnimplementedError();
+  }
+
+  @override
+  String getTarget() {
+    // TODO: implement getTarget
     throw UnimplementedError();
   }
 }

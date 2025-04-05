@@ -74,6 +74,9 @@ dependencies:
   # 암호화
   cryptography: ^2.7.0
 
+  # android geolocator
+  geolocator_android: ^4.4.0 # or the latest stable version
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

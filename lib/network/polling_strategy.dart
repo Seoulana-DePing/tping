@@ -5,14 +5,23 @@ import 'connection_strategy.dart';
 
 class PollingStrategy implements ConnectionStrategy {
   final String baseUrl;
+  final String baseEndpoint;
+  final String pollingEndpoint;
   final int pollingInterval;
+
   Timer? _timer;
   String? _connectedIpAddress;
+  String? _targetIp;
 
   PollingStrategy({
     required this.baseUrl,
-    this.pollingInterval = 1000, // 기본값 1초
+    required this.baseEndpoint, // 기본값 1초
+    required this.pollingEndpoint, // 기본값 1초
+    this.pollingInterval = 1000,
   });
+
+  @override
+  void Function(String ip)? onIpReceived;
 
   @override
   Future<void> initialize() async {
@@ -20,12 +29,16 @@ class PollingStrategy implements ConnectionStrategy {
   }
 
   @override
+  String? getTarget() {
+    return _targetIp;
+  }
+
+  @override
   Future<void> connect(String ipAddress) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/connect'),
+      final response = await http.get(
+        Uri.parse('$baseUrl$baseEndpoint'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'ip_address': ipAddress}),
       );
 
       if (response.statusCode != 200) {
@@ -41,10 +54,13 @@ class PollingStrategy implements ConnectionStrategy {
 
   void _startPolling() {
     _timer?.cancel();
-    _timer = Timer.periodic(
-      Duration(milliseconds: pollingInterval),
-      (_) => getData(),
-    );
+    _timer = Timer.periodic(Duration(milliseconds: pollingInterval), (_) async {
+      final response = await getData();
+      _targetIp = response['ip'];
+      if (_targetIp != null) {
+        onIpReceived?.call(_targetIp!); // IP를 받았을 때 callback 실행
+      }
+    });
   }
 
   @override
@@ -55,7 +71,7 @@ class PollingStrategy implements ConnectionStrategy {
       }
 
       final response = await http.get(
-        Uri.parse('$baseUrl/data'),
+        Uri.parse('$baseUrl$pollingEndpoint'),
         headers: {
           'Content-Type': 'application/json',
           'X-Client-IP': _connectedIpAddress!,

@@ -43,16 +43,18 @@ class NetworkService {
 
   Future<void> startConnection() async {
     final ipAddress = await _getIpAddress();
+    _strategy.onIpReceived = (String ip) async {
+      await handlePing();
+    };
     await _strategy.connect(ipAddress);
   }
 
   Future<void> handlePing() async {
     try {
-      final data = await _strategy.getData();
-      final ipToPing = data['ip_address'];
+      final ipToPing = _strategy.getTarget();
 
       // Ping 수행
-      final ping = Ping(ipToPing, count: 1);
+      final ping = Ping(ipToPing!, count: 1);
       double? responseTime;
 
       await for (final response in ping.stream) {
