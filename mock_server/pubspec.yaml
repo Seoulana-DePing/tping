@@ -1,0 +1,8 @@
+name: mock_server
+
+environment:
+  sdk: "^3.6.0"
+
+dependencies:
+  shelf: ^1.4.1
+  shelf_router: ^1.1.3
