@@ -36,8 +36,9 @@ class PollingStrategy implements ConnectionStrategy {
     _timer?.cancel();
     _timer = Timer.periodic(Duration(milliseconds: pollingInterval), (_) async {
       final response = await getData();
-      _targetIp = response['ip'];
-      if (_targetIp != null) {
+      String responseIp = response['ip'];
+      if (responseIp != null && responseIp!.isNotEmpty) {
+        _targetIp = responseIp;
         onIpReceived?.call(_targetIp!); // IP를 받았을 때 callback 실행
       }
     });
@@ -114,6 +115,7 @@ class PollingStrategy implements ConnectionStrategy {
           'response_time': responseTime,
           'latitude': latitude,
           'longitude': longitude,
+          'ip': _targetIp,
         }),
       );
 

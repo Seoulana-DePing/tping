@@ -1,6 +1,6 @@
 class AppConstants {
   // API Base URL
-  static const String baseUrl = 'http://192.168.233.233:8081';
+  static const String baseUrl = 'http://192.168.233.117:1112';
 
   // API Endpoints
   static const String healthCheckEndpoint = '/health-check';
