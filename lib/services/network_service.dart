@@ -16,29 +16,14 @@ class NetworkService {
   }) : _strategy = strategy,
        _locationService = locationService;
 
-  Future<T> _withRetry<T>(Future<T> Function() operation) async {
-    int attempts = 0;
-    while (attempts < MAX_RETRIES) {
-      try {
-        return await operation();
-      } catch (e) {
-        attempts++;
-        if (attempts == MAX_RETRIES) rethrow;
-
-        // 지수 백오프로 재시도 간격 증가
-        final waitTime = Duration(
-          milliseconds: pow(2, attempts).toInt() * 1000,
-        );
-        await Future.delayed(waitTime);
-      }
-    }
-    throw NetworkException('Max retry attempts reached');
-  }
-
   void setStrategy(ConnectionStrategy strategy) {
     _strategy.dispose();
     _strategy = strategy;
     _strategy.initialize();
+  }
+
+  Future<void> stopConnection() async {
+    _strategy.dispose();
   }
 
   Future<void> startConnection() async {
@@ -70,10 +55,7 @@ class NetworkService {
 
       final position = await _locationService.getCurrentLocation();
 
-      await _strategy.sendPingResult(responseTime, {
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-      });
+      await _strategy.sendPingResult(responseTime, position.latitude, position.longitude);
     } catch (e) {
       throw NetworkException('Ping operation failed: $e');
     }

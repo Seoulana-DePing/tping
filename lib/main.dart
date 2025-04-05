@@ -14,10 +14,12 @@ void main() {
           update:
               (_, location, __) => NetworkService(
                 strategy: PollingStrategy(
+                    walletAddress: AppConstants.walletAddress,
                     baseUrl: AppConstants.baseUrl,
-                    baseEndpoint: AppConstants.pingEndpoint,
+                    healthCheckEndpoint: AppConstants.healthCheckEndpoint,
                     pollingInterval: AppConstants.pingInterval,
-                    pollingEndpoint: AppConstants.pollingEndpoint
+                    pollingEndpoint: AppConstants.pollingEndpoint,
+                    resultEndpoint: AppConstants.resultEndpoint
                 ),
                 locationService: location,
               ),
@@ -140,6 +142,7 @@ class _HomePageState extends State<HomePage> {
       final network = context.read<NetworkService>();
       if (_isServiceRunning) {
         // 서비스 중지 로직
+        await network.stopConnection();
         _showSuccess('Network service stopped successfully!');
         setState(() => _isServiceRunning = false);
       } else {

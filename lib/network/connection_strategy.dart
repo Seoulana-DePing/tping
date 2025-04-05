@@ -4,8 +4,9 @@ abstract class ConnectionStrategy {
   Future<void> initialize();
   Future<void> connect(String ipAddress);
   Future<Map<String, dynamic>> getData();
-  Future<void> sendPingResult(double responseTime, Map<String, double> gpsData);
+  Future<void> sendPingResult(double responseTime, double latitude, double longitude);
   void dispose();
+
   String? getTarget();
 
   getPublicIpAddress() {}

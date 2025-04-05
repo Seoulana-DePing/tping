@@ -32,14 +32,15 @@ class WebSocketStrategy implements ConnectionStrategy {
 
   @override
   Future<void> sendPingResult(
-    double responseTime,
-    Map<String, double> gpsData,
+      double responseTime,
+      double latitude,
+      double longitude
   ) async {
     _channel?.sink.add(
       json.encode({
-        'type': 'ping_result',
         'response_time': responseTime,
-        'gps_data': gpsData,
+        'latitude': latitude,
+        'longitude': longitude
       }),
     );
   }

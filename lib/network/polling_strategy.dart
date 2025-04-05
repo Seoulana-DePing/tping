@@ -4,9 +4,11 @@ import 'package:http/http.dart' as http;
 import 'connection_strategy.dart';
 
 class PollingStrategy implements ConnectionStrategy {
+  final String walletAddress;
   final String baseUrl;
-  final String baseEndpoint;
+  final String healthCheckEndpoint;
   final String pollingEndpoint;
+  final String resultEndpoint;
   final int pollingInterval;
 
   Timer? _timer;
@@ -14,9 +16,11 @@ class PollingStrategy implements ConnectionStrategy {
   String? _targetIp;
 
   PollingStrategy({
+    required this.walletAddress,
     required this.baseUrl,
-    required this.baseEndpoint, // 기본값 1초
+    required this.healthCheckEndpoint, // 기본값 1초
     required this.pollingEndpoint, // 기본값 1초
+    required this.resultEndpoint, // 기본값 1초
     this.pollingInterval = 1000,
   });
 
@@ -28,6 +32,17 @@ class PollingStrategy implements ConnectionStrategy {
     // 초기화 로직
   }
 
+  void _startPolling() {
+    _timer?.cancel();
+    _timer = Timer.periodic(Duration(milliseconds: pollingInterval), (_) async {
+      final response = await getData();
+      _targetIp = response['ip'];
+      if (_targetIp != null) {
+        onIpReceived?.call(_targetIp!); // IP를 받았을 때 callback 실행
+      }
+    });
+  }
+
   @override
   String? getTarget() {
     return _targetIp;
@@ -37,7 +52,7 @@ class PollingStrategy implements ConnectionStrategy {
   Future<void> connect(String ipAddress) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl$baseEndpoint'),
+        Uri.parse('$baseUrl$healthCheckEndpoint'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -50,17 +65,6 @@ class PollingStrategy implements ConnectionStrategy {
     } catch (e) {
       throw PollingException('Failed to connect: $e');
     }
-  }
-
-  void _startPolling() {
-    _timer?.cancel();
-    _timer = Timer.periodic(Duration(milliseconds: pollingInterval), (_) async {
-      final response = await getData();
-      _targetIp = response['ip'];
-      if (_targetIp != null) {
-        onIpReceived?.call(_targetIp!); // IP를 받았을 때 callback 실행
-      }
-    });
   }
 
   @override
@@ -90,8 +94,9 @@ class PollingStrategy implements ConnectionStrategy {
 
   @override
   Future<void> sendPingResult(
-    double responseTime,
-    Map<String, double> gpsData,
+      double responseTime,
+      double latitude,
+      double longitude
   ) async {
     try {
       if (_connectedIpAddress == null) {
@@ -99,15 +104,16 @@ class PollingStrategy implements ConnectionStrategy {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/ping-result'),
+        Uri.parse('$baseUrl$resultEndpoint'),
         headers: {
           'Content-Type': 'application/json',
           'X-Client-IP': _connectedIpAddress!,
         },
         body: json.encode({
+          'wallet_address': walletAddress,
           'response_time': responseTime,
-          'latitude': gpsData['latitude'],
-          'longitude': gpsData['longitude'],
+          'latitude': latitude,
+          'longitude': longitude,
         }),
       );
 
