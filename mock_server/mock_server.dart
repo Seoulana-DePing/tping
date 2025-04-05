@@ -25,7 +25,7 @@ void main() async {
     return Response.ok('');
   });
 
-  app.get('/poll', (Request request) async {
+  app.get('/polling', (Request request) async {
     return Response.ok(
       '{"ip": "8.8.8.8"}',
       headers: {'Content-Type': 'application/json'},

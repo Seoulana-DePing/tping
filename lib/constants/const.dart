@@ -5,7 +5,7 @@ class AppConstants {
   // API Endpoints
   static const String healthCheckEndpoint = '/health-check';
   static const String resultEndpoint = '/result';
-  static const String pollingEndpoint = '/poll';
+  static const String pollingEndpoint = '/polling';
   static const String walletAddress = "#sadf123uilkxcvjkl";
 
   static const String disconnectEndpoint = '/disconnect';
